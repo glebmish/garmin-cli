@@ -2,7 +2,7 @@
 
 ## Project
 
-Python CLI (`garmin`) wrapping the `garminconnect` library. Agent-first design per `agent-cli:design-cli`. v0 scope: sleep reading only.
+Python CLI (`garmin`) wrapping the `garminconnect` library. Agent-first design per `agent-cli:design-cli`. Current scope: sleep, steps (with client-side bucket aggregation), and auto-detected activities.
 
 ## Build & test
 
@@ -17,9 +17,11 @@ uv tool install --reinstall --from . garmin-cli   # rebuild the `garmin` binary 
 - `src/garmin_cli/cli.py` — argparse root, subcommand dispatch, top-level error handler.
 - `src/garmin_cli/auth.py` — `auth login` (interactive).
 - `src/garmin_cli/sleep.py` — `sleep get`.
+- `src/garmin_cli/steps.py` — `steps get` + client-side bucket aggregation (`aggregate()` is the testable seam).
+- `src/garmin_cli/activities.py` — `activities list` with `--date` or `--start/--end`.
 - `src/garmin_cli/schema.py` — `schema --list` / `schema <op>` + `OPS` registry.
 - `src/garmin_cli/output.py` — JSON emit, dotted-path `--fields` filter, control-char sanitization.
-- `src/garmin_cli/validate.py` — input hardening (`date_param`).
+- `src/garmin_cli/validate.py` — input hardening (`date_param`, `bucket_minutes`, `activity_type`).
 - `src/garmin_cli/errors.py` — exit codes + `CliError` with `hint`.
 - `src/garmin_cli/_garmin.py` — thin wrapper around `garminconnect`. Tests monkeypatch this module.
 

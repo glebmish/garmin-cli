@@ -19,6 +19,36 @@ OPS: dict[str, dict] = {
             "3": "bad --date format",
         },
     },
+    "steps.get": {
+        "method": "GET",
+        "description": "Step buckets for a date. Garmin returns 15-minute buckets; --bucket rolls them up client-side.",
+        "args": [
+            {"name": "--date", "type": "date (YYYY-MM-DD)", "required": True},
+            {"name": "--bucket", "type": "duration (15m, 30m, 1h, ...)", "required": False, "default": "15m", "constraint": "multiple of 15 min, 15m..1440m"},
+        ],
+        "output": "Array of bucket objects: {startGMT, endGMT, steps, primaryActivityLevel}. primaryActivityLevel is one of: none, sleeping, sedentary, active, highlyActive. When aggregating, the most-active level across constituent 15-min buckets wins.",
+        "exit_codes": {
+            "0": "success",
+            "2": "auth missing/expired",
+            "3": "bad --date or --bucket",
+        },
+    },
+    "activities.list": {
+        "method": "GET",
+        "description": "Garmin-auto-detected activity records (walks, runs, rides) by date or range.",
+        "args": [
+            {"name": "--date", "type": "date (YYYY-MM-DD)", "required": False, "note": "single-day; mutually exclusive with --start/--end"},
+            {"name": "--start", "type": "date (YYYY-MM-DD)", "required": False, "note": "use with --end"},
+            {"name": "--end", "type": "date (YYYY-MM-DD)", "required": False, "note": "use with --start"},
+            {"name": "--type", "type": "string", "required": False, "note": "filter by typeKey: walking, running, cycling, swimming, hiking, multi_sport, fitness_equipment, other"},
+        ],
+        "output": "Array of activity records (Garmin's raw shape). Useful keys: startTimeLocal, startTimeGMT, duration (seconds), distance (meters), activityType.typeKey, activityName, activityId.",
+        "exit_codes": {
+            "0": "success",
+            "2": "auth missing/expired",
+            "3": "bad date, missing range, or invalid --type",
+        },
+    },
 }
 
 

@@ -2,7 +2,7 @@
 import argparse
 import sys
 
-from garmin_cli import auth, schema, sleep
+from garmin_cli import activities, auth, schema, sleep, steps
 from garmin_cli.errors import EXIT_INTERNAL, CliError, emit
 
 
@@ -33,6 +33,36 @@ def build_parser() -> argparse.ArgumentParser:
     p_sleep_get.add_argument("--fields", default="", help="Dotted-path filter, comma-separated.")
     p_sleep_get.add_argument("--dry-run", action="store_true")
 
+    # steps
+    p_steps = sub.add_parser("steps", help="Step counts.")
+    sub_steps = p_steps.add_subparsers(dest="action", required=True)
+    p_steps_get = sub_steps.add_parser("get", help="Step buckets for a date.")
+    p_steps_get.add_argument("--date", required=True, help="Date (YYYY-MM-DD).")
+    p_steps_get.add_argument(
+        "--bucket",
+        default="15m",
+        help="Bucket size (15m, 30m, 1h, ...). Must be a multiple of 15 minutes. Default 15m.",
+    )
+    p_steps_get.add_argument("--format", choices=["json", "text"], default="json")
+    p_steps_get.add_argument("--fields", default="")
+    p_steps_get.add_argument("--dry-run", action="store_true")
+
+    # activities
+    p_acts = sub.add_parser("activities", help="Auto-detected activity records.")
+    sub_acts = p_acts.add_subparsers(dest="action", required=True)
+    p_acts_list = sub_acts.add_parser("list", help="List activities by date or range.")
+    p_acts_list.add_argument("--date", help="Single day (YYYY-MM-DD).")
+    p_acts_list.add_argument("--start", help="Range start (YYYY-MM-DD).")
+    p_acts_list.add_argument("--end", help="Range end (YYYY-MM-DD).")
+    p_acts_list.add_argument(
+        "--type",
+        dest="activity_type",
+        help="Filter by activity type (e.g. walking, running, cycling).",
+    )
+    p_acts_list.add_argument("--format", choices=["json", "text"], default="json")
+    p_acts_list.add_argument("--fields", default="")
+    p_acts_list.add_argument("--dry-run", action="store_true")
+
     # schema
     p_schema = sub.add_parser("schema", help="Operation introspection.")
     g = p_schema.add_mutually_exclusive_group(required=True)
@@ -48,6 +78,24 @@ def dispatch(args: argparse.Namespace) -> int:
     if args.resource == "sleep" and args.action == "get":
         return sleep.get(
             date_str=args.date,
+            fmt=args.format,
+            fields=_split_fields(args.fields),
+            dry_run=args.dry_run,
+        )
+    if args.resource == "steps" and args.action == "get":
+        return steps.get(
+            date_str=args.date,
+            bucket=args.bucket,
+            fmt=args.format,
+            fields=_split_fields(args.fields),
+            dry_run=args.dry_run,
+        )
+    if args.resource == "activities" and args.action == "list":
+        return activities.list_(
+            date_str=args.date,
+            start_str=args.start,
+            end_str=args.end,
+            activity_type_str=args.activity_type,
             fmt=args.format,
             fields=_split_fields(args.fields),
             dry_run=args.dry_run,

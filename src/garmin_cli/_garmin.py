@@ -1,29 +1,60 @@
 """Thin wrapper around garminconnect. Isolated so tests can monkeypatch."""
+import os
+from pathlib import Path
 from typing import Any
 
 from garmin_cli.errors import EXIT_AUTH, CliError
 
 
-def login(email: str, password: str, mfa_callback) -> None:
-    """Interactive login. Caches tokens to $GARMINTOKENS or ~/.garminconnect."""
+def token_dir() -> Path:
+    return Path(os.environ.get("GARMINTOKENS") or "~/.garminconnect").expanduser()
+
+
+def has_cached_tokens() -> bool:
+    """The lib writes `garmin_tokens.json` inside the dir (or a .json file directly)."""
+    p = token_dir()
+    if p.is_file() and p.name.endswith(".json"):
+        return True
+    return p.is_dir() and any(p.glob("*.json"))
+
+
+def login(email: str, password: str, mfa_callback) -> Path:
+    """Interactive login. Persists tokens. Returns the directory they live in."""
     from garminconnect import Garmin
 
+    path = token_dir()
+    path.mkdir(parents=True, exist_ok=True)
+
     client = Garmin(email=email, password=password, prompt_mfa=mfa_callback)
-    client.login()
+    client.login(tokenstore=str(path))
+
+    if not has_cached_tokens():
+        raise RuntimeError(
+            f"login completed but no token file was written under {path}"
+        )
+    return path
 
 
 def _client():
     """Logged-in Garmin client. Raises CliError(EXIT_AUTH) if no cached tokens."""
     from garminconnect import Garmin, GarminConnectAuthenticationError
 
+    path = token_dir()
+    if not has_cached_tokens():
+        raise CliError(
+            message=f"no cached tokens at {path}",
+            exit_code=EXIT_AUTH,
+            hint="run `garmin auth login` (override location with $GARMINTOKENS)",
+        )
+
     client = Garmin()
     try:
-        client.login()
+        client.login(tokenstore=str(path))
     except (GarminConnectAuthenticationError, FileNotFoundError) as e:
         raise CliError(
             message=f"garmin auth failed: {e}",
             exit_code=EXIT_AUTH,
-            hint="no cached tokens at $GARMINTOKENS or ~/.garminconnect — run `garmin auth login`",
+            hint="tokens may be expired — re-run `garmin auth login`",
         ) from e
     return client
 
@@ -33,7 +64,6 @@ def get_sleep_data(date_iso: str) -> dict[str, Any]:
 
 
 def get_steps_data(date_iso: str) -> list[dict[str, Any]]:
-    """Return Garmin's 15-minute step buckets for the day."""
     return _client().get_steps_data(date_iso) or []
 
 

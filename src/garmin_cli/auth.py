@@ -21,13 +21,19 @@ def login() -> int:
         return input("MFA code: ").strip()
 
     try:
-        _garmin.login(email, password, mfa)
+        path = _garmin.login(email, password, mfa)
     except Exception as e:
+        msg = str(e)
+        hint = "retry login; if MFA SMS not arriving, check Garmin Connect web UI"
+        if "429" in msg or "rate limit" in msg.lower():
+            hint = "Garmin is rate-limiting your IP — wait 10–30 minutes and try again, or try from a different network"
+        elif "no token file was written" in msg:
+            hint = "login appeared to succeed but no token file was written — likely silent rate-limit; wait and retry"
         raise CliError(
             message=f"login failed: {e}",
             exit_code=EXIT_AUTH,
-            hint="retry login; if MFA SMS not arriving, check Garmin Connect web UI",
+            hint=hint,
         ) from e
 
-    print("auth ok — tokens cached at $GARMINTOKENS or ~/.garminconnect")
+    print(f"auth ok — tokens cached at {path}")
     return EXIT_OK

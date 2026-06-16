@@ -7,6 +7,7 @@ canonical operation surface; this doc captures the chassis decisions around it.
 ## Surface
 - Shape: `garmin <resource> <action>` (single API surface).
 - Resources/actions: `auth login`, `sleep get`, `steps get`, `activities list`,
+  `skills list` / `skills get <name>` / `skills install`,
   `schema --list` / `schema <op>`.
 - Action verbs come from the `garminconnect` SDK vocabulary.
 
@@ -66,7 +67,8 @@ canonical operation surface; this doc captures the chassis decisions around it.
 ## Error hints
 - Every `CliError` carries an agent-oriented `hint` (concrete next step).
 - Auth-missing → run `garmin auth login`; rate-limit → wait and retry; no
-  confirmed sleep → check Garmin Connect web UI; bad input → expected format.
+  confirmed (or no usable, i.e. timestamp-less) sleep → check Garmin Connect web
+  UI; bad input → expected format.
 
 ## Sanitization
 - Strategy: strip control chars **and** conversation role-tag patterns

@@ -67,6 +67,17 @@ def test_get_unconfirmed_window_raises(monkeypatch):
     assert ei.value.exit_code == EXIT_API
 
 
+def test_get_confirmed_without_timestamps_raises(monkeypatch):
+    # a confirmed window with no start/end is not usable data — fail, don't
+    # emit a misleading exit-0 record with null timestamps
+    _set_response(monkeypatch, {
+        "dailySleepDTO": {"sleepWindowConfirmed": True}
+    })
+    with pytest.raises(CliError) as ei:
+        sleep.get("2026-05-11", fmt="json", fields=[], dry_run=False)
+    assert ei.value.exit_code == EXIT_API
+
+
 def test_get_dry_run_emits_plan(monkeypatch, capsys):
     called = []
     monkeypatch.setattr(_garmin, "get_sleep_data", lambda d: called.append(d))

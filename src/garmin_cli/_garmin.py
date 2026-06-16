@@ -23,7 +23,13 @@ def login(email: str, password: str, mfa_callback) -> Path:
     from garminconnect import Garmin
 
     path = token_dir()
-    path.mkdir(parents=True, exist_ok=True)
+    # `has_cached_tokens` supports GARMINTOKENS pointing at a .json file; in that
+    # case create the parent dir, otherwise the token-store dir itself. Tokens
+    # grant account access — keep the directory private (0o700).
+    if path.suffix == ".json":
+        path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    else:
+        path.mkdir(parents=True, exist_ok=True, mode=0o700)
 
     client = Garmin(email=email, password=password, prompt_mfa=mfa_callback)
     client.login(tokenstore=str(path))

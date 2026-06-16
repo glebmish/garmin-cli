@@ -5,7 +5,7 @@ from typing import Any
 
 from garmin_cli import _garmin
 from garmin_cli.errors import EXIT_OK
-from garmin_cli.output import emit_json, emit_ndjson
+from garmin_cli.output import emit_json, emit_ndjson, sanitize
 from garmin_cli.validate import bucket_minutes, date_param
 
 # Most-active level wins when aggregating.
@@ -61,7 +61,7 @@ def get(date_str: str, bucket: str, fmt: str, fields: list[str], dry_run: bool) 
     buckets = aggregate(raw, minutes)
 
     if fmt == "text":
-        for b in buckets:
+        for b in sanitize(buckets):
             print(
                 f"{b.get('startGMT')} → {b.get('endGMT')}: "
                 f"steps={b.get('steps')} level={b.get('primaryActivityLevel')}"

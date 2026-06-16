@@ -4,7 +4,7 @@ import sys
 
 from garmin_cli import _garmin
 from garmin_cli.errors import EXIT_API, EXIT_OK, CliError
-from garmin_cli.output import emit_json, emit_ndjson
+from garmin_cli.output import emit_json, emit_ndjson, sanitize
 from garmin_cli.validate import date_param
 
 
@@ -31,8 +31,15 @@ def get(date_str: str, fmt: str, fields: list[str], dry_run: bool) -> int:
             exit_code=EXIT_API,
             hint="no confirmed sleep for this date; check Garmin Connect web UI",
         )
+    if dto.get("sleepStartTimestampGMT") is None or dto.get("sleepEndTimestampGMT") is None:
+        raise CliError(
+            message=f"confirmed sleep for {d.isoformat()} has no start/end timestamps",
+            exit_code=EXIT_API,
+            hint="no usable sleep window for this date; check Garmin Connect web UI",
+        )
 
     if fmt == "text":
+        dto = sanitize(dto)
         start = dto.get("sleepStartTimestampGMT")
         end = dto.get("sleepEndTimestampGMT")
         print(f"{d.isoformat()}: start_gmt_ms={start} end_gmt_ms={end} confirmed=true")

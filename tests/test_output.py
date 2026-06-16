@@ -51,6 +51,17 @@ def test_filter_fields_missing_keys_dropped():
     assert filter_fields({"a": 1}, ["a", "missing"]) == {"a": 1}
 
 
+def test_filter_fields_drops_empty_array_items():
+    # an item that matched no requested path is dropped, not emitted as {}
+    obj = {"items": [{"id": 1}, {"name": "b"}]}
+    assert filter_fields(obj, ["items.id"]) == {"items": [{"id": 1}]}
+
+
+def test_filter_fields_subfield_of_scalar_is_dropped():
+    # requesting a subfield of a non-dict must not leak the whole scalar
+    assert filter_fields({"duration": 120}, ["duration.sub"]) == {}
+
+
 def test_filter_fields_empty_returns_value():
     assert filter_fields({"a": 1}, []) == {"a": 1}
 

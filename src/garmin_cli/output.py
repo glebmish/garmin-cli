@@ -35,7 +35,10 @@ def filter_fields(value: Any, fields: list[str]) -> Any:
 
 def _walk(value: Any, paths: list[list[str]]) -> Any:
     if isinstance(value, list):
-        return [_walk(item, paths) for item in value]
+        # Descend each item; drop items that matched nothing rather than
+        # leaking empty {} placeholders into the array.
+        walked = [_walk(item, paths) for item in value]
+        return [w for w in walked if w != {}]
     if not isinstance(value, dict):
         return value
     out: dict[str, Any] = {}
@@ -43,11 +46,14 @@ def _walk(value: Any, paths: list[list[str]]) -> Any:
         head, *rest = path
         if head not in value:
             continue
+        child = value[head]
         if not rest:
-            out[head] = value[head]
-        else:
-            sub = _walk(value[head], [rest])
-            if sub != {} or isinstance(value[head], dict) is False:
+            out[head] = child
+        elif isinstance(child, (dict, list)):
+            # A scalar can't have subfields; only descend into containers,
+            # and keep the result only if the subpath actually matched.
+            sub = _walk(child, [rest])
+            if sub != {} and sub != []:
                 out[head] = sub
     return out
 

@@ -107,16 +107,29 @@ def _interactive_target() -> Path:
     return base / leaf / "skills"
 
 
+def _copy_tree(src, dest: Path) -> None:
+    """Recursively copy a packaged skill dir to disk as bytes.
+
+    Uses the importlib.resources Traversable API (iterdir/is_dir/read_bytes) so
+    nested directories and binary assets copy cleanly — a flat text-only copy
+    would crash on either.
+    """
+    dest.mkdir(parents=True, exist_ok=True)
+    for item in src.iterdir():
+        out = dest / item.name
+        if item.is_dir():
+            _copy_tree(item, out)
+        else:
+            out.write_bytes(item.read_bytes())
+
+
 def install(output_dir: str | None) -> int:
     target = Path(output_dir).expanduser() if output_dir else _interactive_target()
     target.mkdir(parents=True, exist_ok=True)
 
     count = 0
     for d in _skill_dirs():
-        dest = target / d.name
-        dest.mkdir(parents=True, exist_ok=True)
-        for f in d.iterdir():
-            (dest / f.name).write_text(f.read_text(encoding="utf-8"), encoding="utf-8")
+        _copy_tree(d, target / d.name)
         count += 1
 
     print(f"installed {count} skills to {target}")

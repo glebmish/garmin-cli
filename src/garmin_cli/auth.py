@@ -29,8 +29,11 @@ def login() -> int:
             hint = "Garmin is rate-limiting your IP — wait 10–30 minutes and try again, or try from a different network"
         elif "no token file was written" in msg:
             hint = "login appeared to succeed but no token file was written — likely silent rate-limit; wait and retry"
+        # Don't interpolate the raw exception: garminconnect/requests error text
+        # can embed the submitted email or request URL. Keep a generic message;
+        # the hint carries the actionable guidance.
         raise CliError(
-            message=f"login failed: {e}",
+            message="login failed",
             exit_code=EXIT_AUTH,
             hint=hint,
         ) from e

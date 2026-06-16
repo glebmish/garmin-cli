@@ -4,7 +4,7 @@ import sys
 
 from garmin_cli import _garmin
 from garmin_cli.errors import EXIT_OK, EXIT_VALIDATION, CliError
-from garmin_cli.output import emit_json, emit_ndjson
+from garmin_cli.output import emit_json, emit_ndjson, sanitize
 from garmin_cli.validate import activity_type, date_param
 
 
@@ -61,9 +61,9 @@ def list_(
     activities = _garmin.get_activities_by_date(start.isoformat(), end.isoformat(), type_arg)
 
     if fmt == "text":
-        for a in activities:
+        for a in sanitize(activities):
             print(
-                f"{a.get('startTimeLocal')} {a.get('activityType', {}).get('typeKey')}: "
+                f"{a.get('startTimeLocal')} {(a.get('activityType') or {}).get('typeKey')}: "
                 f"{a.get('activityName')} ({a.get('duration')}s, {a.get('distance')}m)"
             )
         return EXIT_OK

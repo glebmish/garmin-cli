@@ -127,6 +127,10 @@ def dispatch(args: argparse.Namespace) -> int:
             return skills_cmd.get(args.name, args.format)
         if args.action == "install":
             return skills_cmd.install(args.output_dir)
+        raise CliError(
+            message=f"unknown skills action: {args.action!r}",
+            exit_code=EXIT_INTERNAL,
+        )
     if args.resource == "schema":
         if args.list_ops:
             return schema.list_ops()

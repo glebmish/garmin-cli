@@ -38,7 +38,21 @@ garmin = "garmin_cli.cli:main"
 [dependency-groups]
 dev = [
     "pytest>=8.0",
+    "ruff>=0.10",
 ]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+# schema.py is a data registry of long human-readable operation descriptions;
+# reflowing those string literals hurts readability more than it helps.
+"src/garmin_cli/schema.py" = ["E501"]
 
 [build-system]
 requires = ["hatchling"]

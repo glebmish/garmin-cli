@@ -10,7 +10,9 @@ def test_date_param_accepts_iso():
     assert date_param("date", "2026-05-11") == date(2026, 5, 11)
 
 
-@pytest.mark.parametrize("bad", ["2026/05/11", "2026-5-11", "yesterday", "", "2026-13-01", "../etc"])
+@pytest.mark.parametrize(
+    "bad", ["2026/05/11", "2026-5-11", "yesterday", "", "2026-13-01", "../etc"]
+)
 def test_date_param_rejects_garbage(bad):
     with pytest.raises(CliError) as ei:
         date_param("date", bad)

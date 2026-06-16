@@ -3,7 +3,7 @@ import json
 import pytest
 
 from garmin_cli.errors import EXIT_OK, EXIT_SCHEMA, CliError
-from garmin_cli.schema import describe, list_ops, OPS
+from garmin_cli.schema import OPS, describe, list_ops
 
 
 def test_list_ops_prints_sleep_get(capsys):

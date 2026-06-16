@@ -1,7 +1,5 @@
 import json
 
-import pytest
-
 from garmin_cli import _garmin
 from garmin_cli.cli import main
 

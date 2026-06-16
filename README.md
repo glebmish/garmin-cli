@@ -65,6 +65,49 @@ garmin schema steps.get
 garmin schema activities.list
 ```
 
+## Sample output
+
+Every operation is self-describing offline (no account needed) — `garmin schema <op>`
+returns the args, output shape, and exit codes:
+
+```console
+$ garmin schema sleep.get
+{
+  "args": [
+    { "name": "--date", "required": true, "type": "date (YYYY-MM-DD)" }
+  ],
+  "description": "Fetch raw dailySleepDTO for a wake date.",
+  "exit_codes": {
+    "0": "success",
+    "1": "no confirmed/usable sleep for the date, OR a transient Garmin API/network error (retryable)",
+    "2": "auth missing/expired",
+    "3": "bad --date format"
+  },
+  "method": "GET",
+  "output": "dailySleepDTO object (Garmin's raw shape). Includes sleepStartTimestampGMT, sleepEndTimestampGMT, sleepWindowConfirmed, and many other fields."
+}
+```
+
+A data call returns Garmin's raw JSON (illustrative `steps get` response, trimmed):
+
+```console
+$ garmin steps get --date 2026-05-11 --bucket 30m --fields startGMT,steps,primaryActivityLevel
+[
+  { "startGMT": "2026-05-11T06:00:00.0", "steps": 0,   "primaryActivityLevel": "sedentary" },
+  { "startGMT": "2026-05-11T06:30:00.0", "steps": 412, "primaryActivityLevel": "active" },
+  { "startGMT": "2026-05-11T07:00:00.0", "steps": 1893,"primaryActivityLevel": "highlyActive" }
+]
+```
+
+On failure, errors go to stderr as JSON with an actionable `hint`, and the process
+exits with a typed code (see [Exit codes](#exit-codes)):
+
+```console
+$ garmin sleep get --date 2026-05-11
+{"error": "no dailySleepDTO returned for 2026-05-11", "hint": "no confirmed sleep for this date; check Garmin Connect web UI"}
+# exit code: 1
+```
+
 ## Agent skills
 
 Bundled, offline agent docs ship inside the package. An agent can read them at

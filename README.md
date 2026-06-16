@@ -1,15 +1,26 @@
 # garmin-cli
 
-Agent-first CLI for [Garmin Connect](https://connect.garmin.com). Wraps the [`garminconnect`](https://github.com/cyberjunky/python-garminconnect) Python library so it can be driven from a shell or by an AI agent.
+[![CI](https://github.com/glebmish/garmin-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/glebmish/garmin-cli/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/garmin-cli)](https://pypi.org/project/garmin-cli/)
+[![Python](https://img.shields.io/pypi/pyversions/garmin-cli)](https://pypi.org/project/garmin-cli/)
+[![License](https://img.shields.io/github/license/glebmish/garmin-cli)](LICENSE)
+
+Agent-first CLI for [Garmin Connect](https://connect.garmin.com). Wraps the [`garminconnect`](https://github.com/cyberjunky/python-garminconnect) Python library so it can be driven from a shell or by an AI agent. Every command emits JSON, exits with a typed code, and carries an actionable `hint` on failure.
 
 **Scope:** sleep, steps, and auto-detected activities. Designed to grow.
 
+> Not affiliated with, endorsed by, or sponsored by Garmin Ltd. This tool talks to Garmin Connect through the unofficial, reverse-engineered [`garminconnect`](https://github.com/cyberjunky/python-garminconnect) library, not an official Garmin API; it can break if Garmin changes their endpoints.
+
 ## Install
 
+Requires Python 3.12+.
+
 ```bash
-uv tool install --from /path/to/garmin-cli garmin-cli
+pipx install garmin-cli
 # or:
-pipx install /path/to/garmin-cli
+uv tool install garmin-cli
+# or:
+pip install garmin-cli
 ```
 
 `garmin` is now on your `PATH`.
@@ -115,3 +126,7 @@ If nothing comes back, fall back to step buckets and look for sustained `primary
 ```bash
 uv run pytest -v
 ```
+
+## License
+
+[MIT](LICENSE).

@@ -1,4 +1,5 @@
 """argparse root + dispatch."""
+
 import argparse
 import sys
 
@@ -45,9 +46,7 @@ def build_parser() -> argparse.ArgumentParser:
     # steps
     p_steps = sub.add_parser("steps", help="Step counts.")
     sub_steps = p_steps.add_subparsers(dest="action", required=True)
-    p_steps_get = sub_steps.add_parser(
-        "get", parents=[data_io], help="Step buckets for a date."
-    )
+    p_steps_get = sub_steps.add_parser("get", parents=[data_io], help="Step buckets for a date.")
     p_steps_get.add_argument("--date", required=True, help="Date (YYYY-MM-DD).")
     p_steps_get.add_argument(
         "--bucket",

@@ -1,4 +1,5 @@
 """Thin wrapper around garminconnect. Isolated so tests can monkeypatch."""
+
 import os
 from pathlib import Path
 from typing import Any
@@ -35,9 +36,7 @@ def login(email: str, password: str, mfa_callback) -> Path:
     client.login(tokenstore=str(path))
 
     if not has_cached_tokens():
-        raise RuntimeError(
-            f"login completed but no token file was written under {path}"
-        )
+        raise RuntimeError(f"login completed but no token file was written under {path}")
     return path
 
 
@@ -114,10 +113,13 @@ def get_activities_by_date(
     end_iso: str,
     activity_type: str | None = None,
 ) -> list[dict[str, Any]]:
-    return _call(
-        "activities.list",
-        _client().get_activities_by_date,
-        start_iso,
-        end_iso,
-        activity_type,
-    ) or []
+    return (
+        _call(
+            "activities.list",
+            _client().get_activities_by_date,
+            start_iso,
+            end_iso,
+            activity_type,
+        )
+        or []
+    )

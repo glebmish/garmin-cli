@@ -1,4 +1,5 @@
 """`garmin steps get --date YYYY-MM-DD [--bucket 30m]` — step buckets."""
+
 import json
 import sys
 from typing import Any
@@ -31,17 +32,19 @@ def aggregate(raw: list[dict[str, Any]], bucket_min: int) -> list[dict[str, Any]
         return raw
     out: list[dict[str, Any]] = []
     for i in range(0, len(raw), group_size):
-        chunk = raw[i:i + group_size]
+        chunk = raw[i : i + group_size]
         if not chunk:
             continue
-        out.append({
-            "startGMT": chunk[0].get("startGMT"),
-            "endGMT": chunk[-1].get("endGMT"),
-            "steps": sum(int(b.get("steps") or 0) for b in chunk),
-            "primaryActivityLevel": _max_level(
-                [b.get("primaryActivityLevel") or "none" for b in chunk]
-            ),
-        })
+        out.append(
+            {
+                "startGMT": chunk[0].get("startGMT"),
+                "endGMT": chunk[-1].get("endGMT"),
+                "steps": sum(int(b.get("steps") or 0) for b in chunk),
+                "primaryActivityLevel": _max_level(
+                    [b.get("primaryActivityLevel") or "none" for b in chunk]
+                ),
+            }
+        )
     return out
 
 
@@ -50,11 +53,16 @@ def get(date_str: str, bucket: str, fmt: str, fields: list[str], dry_run: bool) 
     minutes = bucket_minutes(bucket)
 
     if dry_run:
-        sys.stderr.write(json.dumps({
-            "would_call": "get_steps_data",
-            "date": d.isoformat(),
-            "bucket_minutes": minutes,
-        }) + "\n")
+        sys.stderr.write(
+            json.dumps(
+                {
+                    "would_call": "get_steps_data",
+                    "date": d.isoformat(),
+                    "bucket_minutes": minutes,
+                }
+            )
+            + "\n"
+        )
         return EXIT_OK
 
     raw = _garmin.get_steps_data(d.isoformat())

@@ -1,4 +1,5 @@
 """`garmin auth login` — interactive login that caches tokens."""
+
 import getpass
 import sys
 

@@ -20,16 +20,19 @@ def test_date_param_rejects_garbage(bad):
     assert ei.value.hint == "expected YYYY-MM-DD"
 
 
-@pytest.mark.parametrize("value,expected", [
-    ("15m", 15),
-    ("30m", 30),
-    ("45m", 45),
-    ("60", 60),
-    ("1h", 60),
-    ("2h", 120),
-    ("90 min", 90),
-    ("1 hour", 60),
-])
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        ("15m", 15),
+        ("30m", 30),
+        ("45m", 45),
+        ("60", 60),
+        ("1h", 60),
+        ("2h", 120),
+        ("90 min", 90),
+        ("1 hour", 60),
+    ],
+)
 def test_bucket_minutes_accepts(value, expected):
     assert bucket_minutes(value) == expected
 

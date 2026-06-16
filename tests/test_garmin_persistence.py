@@ -1,4 +1,5 @@
 """Verify _garmin.login persists tokens and detects silent failures."""
+
 import pytest
 
 from garmin_cli import _garmin
@@ -6,6 +7,7 @@ from garmin_cli import _garmin
 
 class FakeGarmin:
     """Stand-in for garminconnect.Garmin. login() can be made to write tokens or not."""
+
     last_tokenstore: str | None = None
 
     def __init__(self, email=None, password=None, prompt_mfa=None):
@@ -18,6 +20,7 @@ class FakeGarmin:
         FakeGarmin.last_tokenstore = tokenstore
         # Simulate the lib's behaviour: write tokens file if tokenstore given.
         from pathlib import Path
+
         if tokenstore and getattr(FakeGarmin, "_should_write", True):
             p = Path(tokenstore)
             p.mkdir(parents=True, exist_ok=True)
@@ -27,6 +30,7 @@ class FakeGarmin:
 def _install_fake(monkeypatch, *, write: bool):
     FakeGarmin._should_write = write  # type: ignore[attr-defined]
     import garminconnect
+
     monkeypatch.setattr(garminconnect, "Garmin", FakeGarmin)
 
 

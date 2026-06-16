@@ -1,4 +1,5 @@
 """`garmin activities list` — Garmin's auto-detected activity records."""
+
 import json
 import sys
 
@@ -50,12 +51,17 @@ def list_(
     type_arg = activity_type(activity_type_str) if activity_type_str else None
 
     if dry_run:
-        sys.stderr.write(json.dumps({
-            "would_call": "get_activities_by_date",
-            "start": start.isoformat(),
-            "end": end.isoformat(),
-            "type": type_arg,
-        }) + "\n")
+        sys.stderr.write(
+            json.dumps(
+                {
+                    "would_call": "get_activities_by_date",
+                    "start": start.isoformat(),
+                    "end": end.isoformat(),
+                    "type": type_arg,
+                }
+            )
+            + "\n"
+        )
         return EXIT_OK
 
     activities = _garmin.get_activities_by_date(start.isoformat(), end.isoformat(), type_arg)

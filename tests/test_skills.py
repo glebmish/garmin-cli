@@ -1,4 +1,5 @@
 """`garmin skills` list / get / install — offline, no credentials."""
+
 import json
 
 import pytest

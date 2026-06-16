@@ -1,4 +1,5 @@
 """`garmin sleep get --date YYYY-MM-DD` — emits the dailySleepDTO."""
+
 import json
 import sys
 
@@ -12,9 +13,7 @@ def get(date_str: str, fmt: str, fields: list[str], dry_run: bool) -> int:
     d = date_param("date", date_str)
 
     if dry_run:
-        sys.stderr.write(
-            json.dumps({"would_call": "get_sleep_data", "date": d.isoformat()}) + "\n"
-        )
+        sys.stderr.write(json.dumps({"would_call": "get_sleep_data", "date": d.isoformat()}) + "\n")
         return EXIT_OK
 
     raw = _garmin.get_sleep_data(d.isoformat())

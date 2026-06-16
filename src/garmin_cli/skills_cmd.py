@@ -3,6 +3,7 @@
 Offline, no credentials. Skills ship as package data under `skills/<name>/SKILL.md`
 so agents can reach them whether or not they were installed to disk (design §11).
 """
+
 import json
 import sys
 from importlib.resources import files
@@ -32,7 +33,7 @@ def _split_frontmatter(text: str) -> tuple[dict[str, str], str]:
                     if ":" in ln and not ln.startswith((" ", "\t")):
                         k, _, v = ln.partition(":")
                         meta[k.strip()] = v.strip()
-                body = "\n".join(lines[i + 1:]).strip() + "\n"
+                body = "\n".join(lines[i + 1 :]).strip() + "\n"
                 return meta, body
     return {}, text
 
@@ -52,8 +53,7 @@ def list_(fmt: str) -> int:
     skills = [_parse(d) for d in _skill_dirs()]
     if fmt == "json":
         payload = [
-            s["frontmatter"] or {"name": s["name"], "description": s["description"]}
-            for s in skills
+            s["frontmatter"] or {"name": s["name"], "description": s["description"]} for s in skills
         ]
         json.dump(payload, sys.stdout, indent=2, sort_keys=True)
         sys.stdout.write("\n")

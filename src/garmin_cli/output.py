@@ -1,4 +1,5 @@
 """JSON output: field filtering and string sanitization."""
+
 import json
 import re
 import sys
@@ -8,9 +9,7 @@ _SAFE_CONTROL = frozenset({"\t", "\n", "\r"})
 
 # Strip conversation-role tags that user-controlled fields (e.g. activityName)
 # could carry as a prompt-injection payload. Design §13.
-_INJECTION_TAG_RE = re.compile(
-    r"</?\s*(system|assistant|human|user)\s*>", re.IGNORECASE
-)
+_INJECTION_TAG_RE = re.compile(r"</?\s*(system|assistant|human|user)\s*>", re.IGNORECASE)
 
 
 def sanitize(value: Any) -> Any:

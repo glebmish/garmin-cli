@@ -1,4 +1,5 @@
 """Exit codes and structured CLI errors. See design doc §7-§8."""
+
 import json
 import sys
 from dataclasses import dataclass

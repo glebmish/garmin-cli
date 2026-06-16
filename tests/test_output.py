@@ -42,9 +42,7 @@ def test_filter_fields_dotted_path():
 
 def test_filter_fields_descends_arrays():
     obj = {"items": [{"id": 1, "name": "a"}, {"id": 2, "name": "b"}]}
-    assert filter_fields(obj, ["items.id"]) == {
-        "items": [{"id": 1}, {"id": 2}]
-    }
+    assert filter_fields(obj, ["items.id"]) == {"items": [{"id": 1}, {"id": 2}]}
 
 
 def test_filter_fields_missing_keys_dropped():

@@ -26,6 +26,9 @@ jobs:
       - name: Ruff lint
         run: uv run ruff check .
 
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
   test:
     name: test (py${{ matrix.python-version }})
     runs-on: ubuntu-latest

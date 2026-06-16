@@ -23,12 +23,14 @@ def _make_day(values: list[tuple[int, str]]) -> list[dict]:
     for i, (n, lv) in enumerate(values):
         h, m = divmod(i * 15, 60)
         h2, m2 = divmod((i + 1) * 15, 60)
-        out.append(_bucket(
-            f"2026-05-11T{h:02d}:{m:02d}:00.0",
-            f"2026-05-11T{h2:02d}:{m2:02d}:00.0",
-            n,
-            lv,
-        ))
+        out.append(
+            _bucket(
+                f"2026-05-11T{h:02d}:{m:02d}:00.0",
+                f"2026-05-11T{h2:02d}:{m2:02d}:00.0",
+                n,
+                lv,
+            )
+        )
     return out
 
 
@@ -38,12 +40,14 @@ def test_aggregate_passthrough_at_15m():
 
 
 def test_aggregate_30m_sums_steps_and_picks_max_level():
-    raw = _make_day([
-        (10, "sedentary"),
-        (40, "active"),
-        (5, "sedentary"),
-        (3, "sedentary"),
-    ])
+    raw = _make_day(
+        [
+            (10, "sedentary"),
+            (40, "active"),
+            (5, "sedentary"),
+            (3, "sedentary"),
+        ]
+    )
     rolled = steps.aggregate(raw, 30)
     assert len(rolled) == 2
     assert rolled[0]["steps"] == 50
@@ -55,12 +59,14 @@ def test_aggregate_30m_sums_steps_and_picks_max_level():
 
 
 def test_aggregate_1h_highly_active_wins():
-    raw = _make_day([
-        (5, "sedentary"),
-        (200, "highlyActive"),
-        (100, "active"),
-        (10, "sedentary"),
-    ])
+    raw = _make_day(
+        [
+            (5, "sedentary"),
+            (200, "highlyActive"),
+            (100, "active"),
+            (10, "sedentary"),
+        ]
+    )
     rolled = steps.aggregate(raw, 60)
     assert len(rolled) == 1
     assert rolled[0]["steps"] == 315

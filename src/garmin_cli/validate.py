@@ -1,4 +1,5 @@
 """Input hardening. Reject before any HTTP call."""
+
 import re
 from datetime import date
 

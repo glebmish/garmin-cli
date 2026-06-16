@@ -18,13 +18,17 @@ def test_main_sleep_get_validation_error(capsys):
 
 
 def test_main_sleep_get_success(monkeypatch, capsys):
-    monkeypatch.setattr(_garmin, "get_sleep_data", lambda d: {
-        "dailySleepDTO": {
-            "sleepStartTimestampGMT": 1,
-            "sleepEndTimestampGMT": 2,
-            "sleepWindowConfirmed": True,
-        }
-    })
+    monkeypatch.setattr(
+        _garmin,
+        "get_sleep_data",
+        lambda d: {
+            "dailySleepDTO": {
+                "sleepStartTimestampGMT": 1,
+                "sleepEndTimestampGMT": 2,
+                "sleepWindowConfirmed": True,
+            }
+        },
+    )
     rc = main(["sleep", "get", "--date", "2026-05-11"])
     assert rc == 0
     payload = json.loads(capsys.readouterr().out)

@@ -1,4 +1,5 @@
 """SDK errors from data calls map to the right exit codes (design §7/§8)."""
+
 import pytest
 
 from garmin_cli import _garmin

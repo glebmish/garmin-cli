@@ -4,7 +4,7 @@ import sys
 
 from garmin_cli import _garmin
 from garmin_cli.errors import EXIT_OK, EXIT_VALIDATION, CliError
-from garmin_cli.output import emit_json
+from garmin_cli.output import emit_json, emit_ndjson
 from garmin_cli.validate import activity_type, date_param
 
 
@@ -66,6 +66,10 @@ def list_(
                 f"{a.get('startTimeLocal')} {a.get('activityType', {}).get('typeKey')}: "
                 f"{a.get('activityName')} ({a.get('duration')}s, {a.get('distance')}m)"
             )
+        return EXIT_OK
+
+    if fmt == "ndjson":
+        emit_ndjson(activities, fields)
         return EXIT_OK
 
     emit_json(activities, fields)

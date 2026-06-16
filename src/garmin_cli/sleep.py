@@ -4,7 +4,7 @@ import sys
 
 from garmin_cli import _garmin
 from garmin_cli.errors import EXIT_API, EXIT_OK, CliError
-from garmin_cli.output import emit_json
+from garmin_cli.output import emit_json, emit_ndjson
 from garmin_cli.validate import date_param
 
 
@@ -36,6 +36,10 @@ def get(date_str: str, fmt: str, fields: list[str], dry_run: bool) -> int:
         start = dto.get("sleepStartTimestampGMT")
         end = dto.get("sleepEndTimestampGMT")
         print(f"{d.isoformat()}: start_gmt_ms={start} end_gmt_ms={end} confirmed=true")
+        return EXIT_OK
+
+    if fmt == "ndjson":
+        emit_ndjson(dto, fields)
         return EXIT_OK
 
     emit_json(dto, fields)

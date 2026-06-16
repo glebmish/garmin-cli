@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-from garmin_cli.errors import EXIT_AUTH, CliError
+from garmin_cli.errors import EXIT_API, EXIT_AUTH, CliError
 
 
 def token_dir() -> Path:
@@ -59,12 +59,48 @@ def _client():
     return client
 
 
+def _call(label: str, fn, *args):
+    """Run an SDK call, mapping garminconnect errors to CliError exit codes.
+
+    Without this, network/API errors fall through to the top-level
+    `except Exception` and surface as EXIT_INTERNAL (5) instead of
+    EXIT_API (1) / EXIT_AUTH (2). See design §7/§8.
+    """
+    from garminconnect import (
+        GarminConnectAuthenticationError,
+        GarminConnectConnectionError,
+        GarminConnectTooManyRequestsError,
+        HTTPError,
+    )
+
+    try:
+        return fn(*args)
+    except GarminConnectTooManyRequestsError as e:
+        raise CliError(
+            message=f"{label}: rate limited by Garmin: {e}",
+            exit_code=EXIT_API,
+            hint="rate limited; wait 10-30 min and retry, or narrow the date range",
+        ) from e
+    except GarminConnectAuthenticationError as e:
+        raise CliError(
+            message=f"{label}: Garmin rejected the session: {e}",
+            exit_code=EXIT_AUTH,
+            hint="tokens may be expired — re-run `garmin auth login`",
+        ) from e
+    except (GarminConnectConnectionError, HTTPError) as e:
+        raise CliError(
+            message=f"{label}: Garmin API/connection error: {e}",
+            exit_code=EXIT_API,
+            hint="transient Garmin API/network error; retry with backoff",
+        ) from e
+
+
 def get_sleep_data(date_iso: str) -> dict[str, Any]:
-    return _client().get_sleep_data(date_iso) or {}
+    return _call("sleep.get", _client().get_sleep_data, date_iso) or {}
 
 
 def get_steps_data(date_iso: str) -> list[dict[str, Any]]:
-    return _client().get_steps_data(date_iso) or []
+    return _call("steps.get", _client().get_steps_data, date_iso) or []
 
 
 def get_activities_by_date(
@@ -72,4 +108,10 @@ def get_activities_by_date(
     end_iso: str,
     activity_type: str | None = None,
 ) -> list[dict[str, Any]]:
-    return _client().get_activities_by_date(start_iso, end_iso, activity_type) or []
+    return _call(
+        "activities.list",
+        _client().get_activities_by_date,
+        start_iso,
+        end_iso,
+        activity_type,
+    ) or []

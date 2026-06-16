@@ -5,7 +5,7 @@ from typing import Any
 
 from garmin_cli import _garmin
 from garmin_cli.errors import EXIT_OK
-from garmin_cli.output import emit_json
+from garmin_cli.output import emit_json, emit_ndjson
 from garmin_cli.validate import bucket_minutes, date_param
 
 # Most-active level wins when aggregating.
@@ -66,6 +66,10 @@ def get(date_str: str, bucket: str, fmt: str, fields: list[str], dry_run: bool) 
                 f"{b.get('startGMT')} → {b.get('endGMT')}: "
                 f"steps={b.get('steps')} level={b.get('primaryActivityLevel')}"
             )
+        return EXIT_OK
+
+    if fmt == "ndjson":
+        emit_ndjson(buckets, fields)
         return EXIT_OK
 
     emit_json(buckets, fields)

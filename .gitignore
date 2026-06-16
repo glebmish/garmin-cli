@@ -5,3 +5,13 @@ __pycache__/
 dist/
 build/
 *.egg-info/
+
+# macOS
+.DS_Store
+
+# Local Claude Code config
+.claude/
+
+# Garmin token cache (defensive — default lives at ~/.garminconnect, outside repo)
+.garminconnect/
+*token*.json

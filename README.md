@@ -54,6 +54,22 @@ garmin schema steps.get
 garmin schema activities.list
 ```
 
+## Agent skills
+
+Bundled, offline agent docs ship inside the package. An agent can read them at
+runtime or install them locally — no credentials needed.
+
+```bash
+garmin skills list                 # one line per skill (name + description)
+garmin skills get garmin-shared    # print a skill's body
+garmin skills install              # interactive: ./.claude/skills or ~/.claude/skills
+garmin skills install --output-dir ./.claude/skills   # non-interactive
+```
+
+Start with `garmin-shared` (the front door), then the per-resource skills
+(`garmin-sleep`, `garmin-steps`, `garmin-activities`) and the
+`recipe-reconstruct-day` workflow.
+
 ## Common recipes
 
 **"Was my 09:00–09:30 commute active?"**
@@ -77,7 +93,7 @@ If nothing comes back, fall back to step buckets and look for sustained `primary
 
 ## Output contract
 
-- **stdout**: JSON (default) or one-line text (`--format text`).
+- **stdout**: JSON (default), NDJSON (`--format ndjson`, one object per line), or one-line text (`--format text`).
 - **stderr**: errors as JSON `{"error": ..., "hint": ...}`.
 - **`--fields a.b,c.d`**: dotted-path filter, comma-separated. Arrays descend implicitly.
 - **Envelope**: `garmin sleep get` peels Garmin's outer `dailySleepDTO` wrapper; you consume the inner object directly. So `--fields sleepStartTimestampGMT` (not `dailySleepDTO.sleepStartTimestampGMT`). `steps get` and `activities list` return arrays as-is.

@@ -2,7 +2,7 @@
 import argparse
 import sys
 
-from garmin_cli import activities, auth, schema, sleep, steps
+from garmin_cli import activities, auth, schema, skills_cmd, sleep, steps
 from garmin_cli.errors import EXIT_INTERNAL, CliError, emit
 
 
@@ -12,12 +12,22 @@ def _split_fields(value: str | None) -> list[str]:
     return [p.strip() for p in value.split(",") if p.strip()]
 
 
+def _data_io_parent() -> argparse.ArgumentParser:
+    """Shared output flags for the data-returning ops (design §3 — inherited, not duplicated)."""
+    io = argparse.ArgumentParser(add_help=False)
+    io.add_argument("--format", choices=["json", "ndjson", "text"], default="json")
+    io.add_argument("--fields", default="", help="Dotted-path filter, comma-separated.")
+    io.add_argument("--dry-run", action="store_true")
+    return io
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="garmin",
         description="Agent-first CLI for Garmin Connect.",
     )
     sub = p.add_subparsers(dest="resource", required=True)
+    data_io = _data_io_parent()
 
     # auth
     p_auth = sub.add_parser("auth", help="Authentication.")
@@ -27,30 +37,30 @@ def build_parser() -> argparse.ArgumentParser:
     # sleep
     p_sleep = sub.add_parser("sleep", help="Sleep data.")
     sub_sleep = p_sleep.add_subparsers(dest="action", required=True)
-    p_sleep_get = sub_sleep.add_parser("get", help="Fetch dailySleepDTO for a date.")
+    p_sleep_get = sub_sleep.add_parser(
+        "get", parents=[data_io], help="Fetch dailySleepDTO for a date."
+    )
     p_sleep_get.add_argument("--date", required=True, help="Wake date (YYYY-MM-DD).")
-    p_sleep_get.add_argument("--format", choices=["json", "text"], default="json")
-    p_sleep_get.add_argument("--fields", default="", help="Dotted-path filter, comma-separated.")
-    p_sleep_get.add_argument("--dry-run", action="store_true")
 
     # steps
     p_steps = sub.add_parser("steps", help="Step counts.")
     sub_steps = p_steps.add_subparsers(dest="action", required=True)
-    p_steps_get = sub_steps.add_parser("get", help="Step buckets for a date.")
+    p_steps_get = sub_steps.add_parser(
+        "get", parents=[data_io], help="Step buckets for a date."
+    )
     p_steps_get.add_argument("--date", required=True, help="Date (YYYY-MM-DD).")
     p_steps_get.add_argument(
         "--bucket",
         default="15m",
         help="Bucket size (15m, 30m, 1h, ...). Must be a multiple of 15 minutes. Default 15m.",
     )
-    p_steps_get.add_argument("--format", choices=["json", "text"], default="json")
-    p_steps_get.add_argument("--fields", default="")
-    p_steps_get.add_argument("--dry-run", action="store_true")
 
     # activities
     p_acts = sub.add_parser("activities", help="Auto-detected activity records.")
     sub_acts = p_acts.add_subparsers(dest="action", required=True)
-    p_acts_list = sub_acts.add_parser("list", help="List activities by date or range.")
+    p_acts_list = sub_acts.add_parser(
+        "list", parents=[data_io], help="List activities by date or range."
+    )
     p_acts_list.add_argument("--date", help="Single day (YYYY-MM-DD).")
     p_acts_list.add_argument("--start", help="Range start (YYYY-MM-DD).")
     p_acts_list.add_argument("--end", help="Range end (YYYY-MM-DD).")
@@ -59,9 +69,19 @@ def build_parser() -> argparse.ArgumentParser:
         dest="activity_type",
         help="Filter by activity type (e.g. walking, running, cycling).",
     )
-    p_acts_list.add_argument("--format", choices=["json", "text"], default="json")
-    p_acts_list.add_argument("--fields", default="")
-    p_acts_list.add_argument("--dry-run", action="store_true")
+
+    # skills
+    p_skills = sub.add_parser("skills", help="Bundled agent skills (offline).")
+    sub_skills = p_skills.add_subparsers(dest="action", required=True)
+    p_sk_list = sub_skills.add_parser("list", help="List bundled skills.")
+    p_sk_list.add_argument("--format", choices=["text", "json"], default="text")
+    p_sk_get = sub_skills.add_parser("get", help="Print a skill's body.")
+    p_sk_get.add_argument("name", help="Skill name (see `skills list`).")
+    p_sk_get.add_argument("--format", choices=["text", "json"], default="text")
+    p_sk_install = sub_skills.add_parser("install", help="Install skills to disk.")
+    p_sk_install.add_argument(
+        "--output-dir", help="Target dir; skips the interactive scope/dir prompts."
+    )
 
     # schema
     p_schema = sub.add_parser("schema", help="Operation introspection.")
@@ -100,6 +120,13 @@ def dispatch(args: argparse.Namespace) -> int:
             fields=_split_fields(args.fields),
             dry_run=args.dry_run,
         )
+    if args.resource == "skills":
+        if args.action == "list":
+            return skills_cmd.list_(args.format)
+        if args.action == "get":
+            return skills_cmd.get(args.name, args.format)
+        if args.action == "install":
+            return skills_cmd.install(args.output_dir)
     if args.resource == "schema":
         if args.list_ops:
             return schema.list_ops()
